@@ -1,4 +1,5 @@
-### Data kwaliteit analyse 
+
+/* Data kwaliteit analyse 
 
 ## Naming conventions - verwaarloosde tabellen en geen foreign keys
 
@@ -18,6 +19,39 @@ WHERE m.id IS NULL;
 
 Geen goede oplossing want je bent data aan het aanpassen en verwijderen 
 Betere oplossing shadow table maken en waar er geeen match is data naar de shadow tabel sturen dan pas data deleten en dan een match maken. 
+
+
+
+## Probleem 2 – Ongeldige company waarde in suppliers
+In de tabel suppliers staat in de kolom company de waarde 0, zoals te zijn in de foto terwijl er geen overeenkomstige record bestaat in de tabel companies.
+
+## Oplossing 2
+De waarde 0 kan vervangen worden door NULL. Ook moet de kolom aangepast worden zodat NULL toegestaan is.
+
+
+Samenvatting van wat ik heb gedaan
+Tijdens deze opdracht heb ik de database opgeschoond zodat foreign keys konden worden toegevoegd. 
+In de oorspronkelijke data zaten namelijk rijen waarbij een kolom verwees naar een waarde die niet bestond in de andere tabel. 
+Daardoor konden de foreign keys niet worden aangemaakt.
+Om dit op te lossen heb ik eerst gezocht naar deze ongeldige verwijzingen met behulp van LEFT JOIN queries. De rijen die een probleem veroorzaakten heb ik opgeslagen in zogenaamde shadow tables.
+ Op deze manier blijft de originele data bewaard en gaat er niets verloren.
+Daarna heb ik de originele tabellen opgeschoond door de foutieve rijen te verwijderen of de ongeldige waarden aan te passen (bijvoorbeeld door ze NULL te maken). 
+Ook moest ik rekening houden met tabellen die afhankelijk zijn van andere tabellen. Daarom moesten sommige rijen eerst uit onderliggende tabellen worden verwijderd voordat de hoofdtabellen aangepast konden worden.
+Nadat de data was opgeschoond, heb ik de foreign key constraints toegevoegd. Hierdoor controleert de database nu automatisch of nieuwe data nog steeds aan de juiste relaties voldoet.
+In het kort
+Dit proces heb ik toegepast op de volgende tabellen:
+mhl_cities
+mhl_suppliers
+mhl_suppliers_mhl_rubriek_view
+mhl_properties
+mhl_detaildefs
+mhl_yn_properties
+mhl_hitcount
+Voor deze tabellen heb ik eerst de problematische rijen gevonden, deze opgeslagen in shadow tables en daarna de originele tabellen opgeschoond zodat de foreign keys succesvol konden worden toegevoegd.
+
+*/
+
+
 
 CREATE TABLE mhl_cities_shadow AS
 SELECT c.*
@@ -49,7 +83,6 @@ LEFT JOIN mhl_rubrieken r
     ON m.mhl_rubriek_view_ID = r.id
 WHERE m.mhl_rubriek_view_ID IS NOT NULL
   AND r.id IS NULL;
-
 
 
 
@@ -245,6 +278,9 @@ LEFT JOIN mhl_suppliers s
 ON c.supplier_ID=s.id
 WHERE c.supplier_ID IS NOT NULL 
 AND s.id IS NULL;
+
+
+
 DELETE mp
 FROM mhl_properties mp
 JOIN mhl_suppliers s
@@ -368,28 +404,5 @@ AND m.id IS NULL;
 
 
 
-
-## Probleem 2 – Ongeldige company waarde in suppliers
-In de tabel suppliers staat in de kolom company de waarde 0, zoals te zijn in de foto terwijl er geen overeenkomstige record bestaat in de tabel companies.
-
-## Oplossing 2
-De waarde 0 kan vervangen worden door NULL. Ook moet de kolom aangepast worden zodat NULL toegestaan is.
-
-## Probleem 3 – Geen primary key in hitcount
-<img src="relational-data-storage/opdracht-2/hitcount_tabel.png">
-
-De tabel hitcount heeft geen primary key. Daardoor kunnen records niet uniek geïdentificeerd worden.
-
-## Oplossing 3
-Een primary key toevoegen aan de tabel, bijvoorbeeld een auto-increment id.
-
-Feedback: is niet noodzalijk 
-
-## Probleem 4 – Lege waarden in plaats van NULL
-<img src="relational-data-storage/opdracht-2/contact_tabel.png">
-In sommige tabellen worden lege waarden zoals de contact tabel in de foto gebruikt waar eigenlijk NULL bedoeld is. Dit kan voor verwarring zorgen bij het verwerken van data.
-
-## Oplossing 4 
-Lege waarden vervangen door NULL.
 
 
