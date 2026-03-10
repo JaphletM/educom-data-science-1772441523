@@ -64,6 +64,7 @@ LEFT JOIN mhl_rubrieken r
     ON m.mhl_rubriek_view_ID = r.id
 WHERE m.mhl_rubriek_view_ID IS NOT NULL
   AND r.id IS NULL;
+
 CREATE TABLE mhl_properties_shadow 
 SELECT p.*
 FROM mhl_properties p
@@ -89,7 +90,7 @@ LEFT JOIN mhl_propertytypes pt
 WHERE (p.supplier_ID IS NOT NULL AND s.id IS NULL)
    OR (p.propertytype_ID IS NOT NULL AND pt.id IS NULL);
 
-  CREATE TABLE mhl_detaildefs_shadow 
+CREATE TABLE mhl_detaildefs_shadow 
 SELECT d.*
 FROM mhl_detaildefs d
 LEFT JOIN mhl_propertytypes p
@@ -209,7 +210,42 @@ LEFT JOIN pc_lat_long p
 WHERE s.postcode IS NOT NULL
   AND s.postcode <> ''
   AND p.pc6 IS NULL;
-  DELETE mp
+
+
+CREATE TABLE mhl_hitcount_bad_suppliers
+SELECT h.*
+FROM mhl_hitcount h
+JOIN mhl_suppliers s
+ON h.supplier_ID=s.id
+LEFT JOIN mhl_membertypes m
+ON s.membertype=m.id
+WHERE s.membertype IS NOT NULL 
+AND m.id IS NULL;
+
+UPDATE mhl_suppliers s
+LEFT JOIN mhl_membertypes m
+    ON s.membertype = m.id
+SET s.membertype = NULL
+WHERE s.membertype IS NOT NULL
+  AND m.id IS NULL;
+
+  UPDATE mhl_suppliers s SET s.company = NULL WHERE s.company =0;
+
+ CREATE TABLE mhl_contacts_shadows AS 
+SELECT c.* 
+FROM mhl_contacts c 
+LEFT JOIN mhl_suppliers s 
+ON c.supplier_ID=s.id
+WHERE c.supplier_ID IS NOT NULL 
+AND s.id IS NULL;
+
+DELETE c
+FROM mhl_contacts c 
+LEFT JOIN mhl_suppliers s 
+ON c.supplier_ID=s.id
+WHERE c.supplier_ID IS NOT NULL 
+AND s.id IS NULL;
+DELETE mp
 FROM mhl_properties mp
 JOIN mhl_suppliers s
     ON mp.supplier_ID = s.id
@@ -247,6 +283,84 @@ JOIN (
 ) p
     ON s.postcode = p.pc6
 SET s.pc_lat_long_ID = p.id;
+
+
+
+CREATE TABLE hitcount_shadow AS
+SELECT h.* 
+FROM mhl_hitcount h
+LEFT JOIN mhl_suppliers s
+ON h.supplier_ID =s.id 
+WHERE h.supplier_ID IS NOT NULL
+AND s.id is NULL 
+
+DELETE h 
+FROM mhl_hitcount h
+LEFT JOIN mhl_suppliers s
+ON h.supplier_ID =s.id 
+WHERE h.supplier_ID IS NOT NULL
+AND s.id is NULL 
+
+ALTER TABLE pc_lat_long
+MODIFY id INT;
+ALTER TABLE pc_lat_long
+DROP PRIMARY KEY;
+ALTER TABLE pc_lat_long
+ADD PRIMARY KEY pc6
+
+ALTER TABLE mhl_suppliers
+ADD CONSTRAINT fk_postcode
+FOREIGN KEY postcode
+REFERENCES pc_lat_long(pc6)
+
+
+ALTER TABLE mhl_suppliers
+ADD CONSTRAINT fk_postcode
+FOREIGN KEY (postcode)
+REFERENCES pc_lat_long(pc6);
+
+
+SELECT s.*
+FROM mhl_suppliers s
+LEFT JOIN pc_lat_long p
+    ON s.postcode = p.pc6
+WHERE s.postcode IS NOT NULL
+  AND s.postcode <> ''
+  AND p.pc6 IS NULL;
+
+
+UPDATE mhl_suppliers
+SET postcode = TRIM(UPPER(REPLACE(postcode, ' ', '')))
+WHERE postcode IS NOT NULL;
+
+UPDATE pc_lat_long
+SET pc6 = TRIM(UPPER(REPLACE(pc6, ' ', '')))
+WHERE pc6 IS NOT NULL;
+
+UPDATE mhl_suppliers
+SET postcode = TRIM(UPPER(REPLACE(postcode, ' ', '')))
+WHERE postcode IS NOT NULL;
+
+UPDATE pc_lat_long
+SET pc6 = TRIM(UPPER(REPLACE(pc6, ' ', '')))
+WHERE pc6 IS NOT NULL;
+
+UPDATE mhl_suppliers
+SET postcode = NULL
+WHERE postcode = '';
+
+INSERT INTO mhl_suppliers_shadow
+SELECT s.*
+FROM mhl_suppliers s 
+LEFT JOIN mhl_membertypes m
+ON s.membertype=m.id
+WHERE s.membertype IS NOT NULL 
+AND m.id IS NULL;
+
+
+
+
+
 
 
 
