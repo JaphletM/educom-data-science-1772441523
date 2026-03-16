@@ -14,4 +14,4 @@ LEFT JOIN mhl_cities AS V ON V.ID=S.city_ID
 LEFT JOIN mhl_communes AS VC ON VC.ID=V.commune_ID
 LEFT JOIN mhl_districts AS VP ON VP.ID=VC.district_ID
 WHERE postcode <> ''
-ORDER BY provincie, stad, leverancier
+ORDER BY provincie, stad, leverancier; 
