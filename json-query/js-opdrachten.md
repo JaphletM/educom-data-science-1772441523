@@ -1177,6 +1177,7 @@ sort_by(.continent)
 ]
 ```
 ### opdracht 6 
+Met jq heb ik de landen gegroepeerd per continent en per jaar de totale bevolking berekend door de populaties op te tellen. Vervolgens heb ik deze gegevens geëxporteerd naar een CSV-bestand.
 
 ```bash 
 jq -r '
@@ -1220,6 +1221,9 @@ jq -r '
 
 
 ```
+
+### opdracht 8
+Ik heb de JSON-file opgesplitst in een tabel countries en een tabel population. De rank gebruik ik als primaire sleutel en als country_id in de population-tabel. Daarnaast heb ik berekende velden zoals population_density en growth_rate verwijderd, zodat alleen de noodzakelijke data wordt opgeslagen en de database genormaliseerd is.
 
 
 
